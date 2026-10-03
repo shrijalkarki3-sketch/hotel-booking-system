@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 // Prevent OpenSSL 3.x TLS SSL Alert 80 drops on Windows Node.js for MongoDB Atlas shard hosts
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
