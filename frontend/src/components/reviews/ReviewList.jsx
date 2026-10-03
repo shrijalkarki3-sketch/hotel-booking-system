@@ -4,13 +4,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Star, ShieldCheck, CheckCircle2, MessageSquare, ThumbsUp, Send, AlertCircle } from 'lucide-react';
 
-const ReviewList = ({ hotelId }) => {
+const ReviewList = ({ hotelId, ratingAverage }) => {
   const { user } = useAuth();
   const toast = useToast();
 
   const [reviews, setReviews] = useState([]);
   const [summary, setSummary] = useState({ totalReviews: 0, distributionPct: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // Review Eligibility & Form State
   const [eligibility, setEligibility] = useState({ eligible: false, eligibleBookings: [] });
@@ -22,12 +23,12 @@ const ReviewList = ({ hotelId }) => {
 
   const fetchReviewsData = async () => {
     setLoading(true);
+    setError('');
     try {
       const res = await getHotelReviews(hotelId);
-      if (res.success) {
-        setReviews(res.data);
-        setSummary(res.summary);
-      }
+      if (!res.success) throw new Error(res.message || 'Reviews could not be loaded.');
+      setReviews(res.data || []);
+      setSummary(res.summary || { totalReviews: 0, distributionPct: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } });
 
       if (user?.role === 'customer') {
         const eligRes = await checkEligibility(hotelId);
@@ -40,6 +41,7 @@ const ReviewList = ({ hotelId }) => {
       }
     } catch (err) {
       console.error('Failed to load reviews:', err);
+      setError(err.response?.data?.message || err.message || 'Reviews could not be loaded right now.');
     } finally {
       setLoading(false);
     }
@@ -81,8 +83,14 @@ const ReviewList = ({ hotelId }) => {
     }
   };
 
+  const averageRating = Number(ratingAverage) > 0
+    ? Number(ratingAverage)
+    : summary.totalReviews > 0 && reviews.length === summary.totalReviews
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+      : null;
+
   return (
-    <div className="space-y-8">
+    <div className="review-list space-y-8">
       
       {/* Header Title */}
       <div className="flex items-center justify-between">
@@ -90,8 +98,8 @@ const ReviewList = ({ hotelId }) => {
           <MessageSquare className="h-6 w-6 text-amber-400" />
           <span>Guest Reviews & Ratings</span>
         </h2>
-        <span className="text-xs font-semibold text-slate-400">
-          {summary.totalReviews} Verified Review(s)
+        <span className="text-sm font-medium text-slate-500" aria-live="polite">
+          {loading ? 'Loading reviews' : `${summary.totalReviews} ${summary.totalReviews === 1 ? 'review' : 'reviews'}`}
         </span>
       </div>
 
@@ -100,21 +108,21 @@ const ReviewList = ({ hotelId }) => {
         
         {/* Average Rating Block (Col 1) */}
         <div className="flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-800 pb-6 md:pb-0 md:pr-6 text-center">
-          <div className="text-5xl font-extrabold text-white mb-1">
-            {summary.totalReviews > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '4.8'}
+          <div className="mb-1 text-4xl font-bold text-ink">
+            {averageRating === null ? 'Not rated' : averageRating.toFixed(1)}
           </div>
           <div className="flex items-center gap-1 mb-2">
             {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} className="h-4 w-4 fill-amber-400 text-amber-400" />
+              <Star key={star} className={`h-4 w-4 ${averageRating !== null && star <= Math.round(averageRating) ? 'fill-amber-400 text-amber-500' : 'text-slate-300'}`} />
             ))}
           </div>
-          <span className="text-xs font-semibold text-slate-400">Based on verified guest stays</span>
+          <span className="text-xs font-medium text-slate-500">{summary.totalReviews} guest reviews</span>
         </div>
 
         {/* Rating Distribution Bars (Col 2) */}
         <div className="md:col-span-2 space-y-2">
           {[5, 4, 3, 2, 1].map((stars) => {
-            const pct = summary.distributionPct[stars] || (stars === 5 ? 80 : stars === 4 ? 15 : 5);
+            const pct = Number(summary.distributionPct?.[stars]) || 0;
             return (
               <div key={stars} className="flex items-center gap-3 text-xs">
                 <span className="w-12 font-semibold text-slate-300 flex items-center gap-1">
@@ -126,13 +134,19 @@ const ReviewList = ({ hotelId }) => {
                     style={{ width: `${pct}%` }}
                   ></div>
                 </div>
-                <span className="w-10 text-right font-mono text-slate-400">{pct}%</span>
+                <span className="w-10 text-right tabular-nums text-slate-500">{pct}%</span>
               </div>
             );
           })}
         </div>
 
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">
+          {error}
+        </div>
+      )}
 
       {/* Verified Customer Review Submission Card */}
       {user?.role === 'customer' && eligibility.eligible && (
@@ -216,7 +230,9 @@ const ReviewList = ({ hotelId }) => {
 
       {/* Published Reviews List */}
       <div className="space-y-4">
-        {reviews.length > 0 ? (
+        {loading ? (
+          <div className="hotel-loading-skeleton h-36 rounded-xl" aria-label="Loading guest reviews" />
+        ) : error ? null : reviews.length > 0 ? (
           reviews.map((r) => (
             <div key={r._id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-3">
               <div className="flex items-center justify-between">

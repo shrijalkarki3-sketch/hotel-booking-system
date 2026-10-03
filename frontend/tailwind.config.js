@@ -7,6 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
+        forest: {
+          50: '#eef5f1',
+          100: '#dbe9e1',
+          500: '#3b7868',
+          600: '#2e6657',
+          700: '#245447',
+          900: '#173b33',
+        },
+        canvas: '#faf9f6',
+        ink: '#1e2d28',
         brand: {
           50: '#f0f7ff',
           100: '#e0effe',
@@ -21,7 +31,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['DM Sans', 'sans-serif'],
+        display: ['DM Serif Display', 'serif'],
       }
     },
   },

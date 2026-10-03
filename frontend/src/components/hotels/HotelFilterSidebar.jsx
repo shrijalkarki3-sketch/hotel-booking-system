@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Filter, RotateCcw, Star, DollarSign, Sparkles, Building, Users } from 'lucide-react';
 
 const AMENITY_OPTIONS = [
@@ -13,10 +13,14 @@ const AMENITY_OPTIONS = [
   'Parking',
 ];
 
-const ROOM_TYPES = ['Single', 'Double', 'Deluxe', 'Suite', 'Family'];
+const ROOM_TYPES = ['Single', 'Double', 'Deluxe', 'Suite', 'Family', 'Presidential'];
 
 const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);
+
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
 
   const handleInputChange = (field, value) => {
     const updated = { ...localFilters, [field]: value };
@@ -49,7 +53,7 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-6">
+    <aside className="filter-panel bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-6" aria-label="Filter hotels">
       
       {/* Sidebar Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-800">
@@ -58,8 +62,9 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
           <span>Filter Hotels</span>
         </div>
         <button
+          type="button"
           onClick={handleReset}
-          className="flex items-center gap-1 text-xs text-slate-400 hover:text-cyan-400 transition-colors"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-cyan-400 transition-colors"
         >
           <RotateCcw className="h-3.5 w-3.5" />
           <span>Reset</span>
@@ -72,19 +77,14 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
           <Building className="h-3.5 w-3.5 text-cyan-400" />
           Destination / City
         </label>
-        <select
+        <input
+          type="search"
+          aria-label="Filter by city"
           value={localFilters.city || ''}
           onChange={(e) => handleInputChange('city', e.target.value)}
-          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
-        >
-          <option value="">All Locations</option>
-          <option value="Pokhara">Pokhara</option>
-          <option value="Kathmandu">Kathmandu</option>
-          <option value="Nagarkot">Nagarkot</option>
-          <option value="Chitwan">Chitwan</option>
-          <option value="Lalitpur">Lalitpur (Patan)</option>
-          <option value="Bhaktapur">Bhaktapur</option>
-        </select>
+          placeholder="Any city"
+          className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder-slate-500"
+        />
       </div>
 
       {/* Price Range */}
@@ -99,14 +99,16 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
             placeholder="Min ($)"
             value={localFilters.priceMin || ''}
             onChange={(e) => handleInputChange('priceMin', e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-slate-500"
+            min="0"
+            className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder-slate-500"
           />
           <input
             type="number"
             placeholder="Max ($)"
             value={localFilters.priceMax || ''}
             onChange={(e) => handleInputChange('priceMax', e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-slate-500"
+            min="0"
+            className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder-slate-500"
           />
         </div>
       </div>
@@ -123,10 +125,11 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
               key={r}
               type="button"
               onClick={() => handleInputChange('rating', r)}
+              aria-pressed={localFilters.rating === r}
               className={`py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                 localFilters.rating === r
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-900'
               }`}
             >
               {r === '' ? 'Any' : `${r}★+`}
@@ -143,7 +146,7 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
         <select
           value={localFilters.roomType || ''}
           onChange={(e) => handleInputChange('roomType', e.target.value)}
-          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-white"
         >
           <option value="">Any Room Type</option>
           {ROOM_TYPES.map((t) => (
@@ -161,7 +164,7 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
         <select
           value={localFilters.guests || ''}
           onChange={(e) => handleInputChange('guests', e.target.value)}
-          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-white"
         >
           <option value="">Any Capacity</option>
           <option value="1">1+ Guest</option>
@@ -183,13 +186,13 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
             return (
               <label
                 key={amenity}
-                className="flex items-center gap-2.5 text-xs text-slate-300 hover:text-white cursor-pointer select-none"
+                className="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer select-none"
               >
                 <input
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => handleAmenityToggle(amenity)}
-                  className="rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-cyan-500 h-3.5 w-3.5"
+                  className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-cyan-600 focus:ring-cyan-600"
                 />
                 <span>{amenity}</span>
               </label>
@@ -198,7 +201,7 @@ const HotelFilterSidebar = ({ filters, onFilterChange, onResetFilters }) => {
         </div>
       </div>
 
-    </div>
+    </aside>
   );
 };
 

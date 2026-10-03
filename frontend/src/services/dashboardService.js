@@ -6,6 +6,16 @@ export const getCustomerStats = async () => {
   return response.data;
 };
 
+export const getAdminReports = async (params = {}) => {
+  const response = await API.get('/analytics/reports/admin', { params });
+  return response.data;
+};
+
+export const getManagerReports = async (params = {}) => {
+  const response = await API.get('/analytics/reports/manager', { params });
+  return response.data;
+};
+
 // Manager Analytics & Management
 export const getManagerStats = async () => {
   const response = await API.get('/analytics/manager');
@@ -65,6 +75,16 @@ export const getAdminStats = async () => {
 
 export const getAdminUsers = async (params = {}) => {
   const response = await API.get('/users', { params });
+  return response.data;
+};
+
+export const getUserById = async (id) => {
+  const response = await API.get(`/users/${id}`);
+  return response.data;
+};
+
+export const updateUser = async (id, data) => {
+  const response = await API.patch(`/users/${id}`, data);
   return response.data;
 };
 

@@ -41,7 +41,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+    <nav className="site-nav bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
@@ -196,14 +196,163 @@ const Navbar = () => {
             {isAuthenticated && <NotificationDropdown />}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              className="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition-all"
+              aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? <X className="h-6 w-6 text-cyan-400" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
 
         </div>
       </div>
+
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-slate-900/98 border-b border-slate-800 px-4 pt-3 pb-6 space-y-4 shadow-2xl backdrop-blur-2xl animate-in slide-in-from-top duration-200">
+
+          {/* User Profile Header on Mobile */}
+          {isAuthenticated ? (
+            <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3 truncate">
+                <div className="h-10 w-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold text-base flex items-center justify-center border border-cyan-500/30 shrink-0">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="truncate">
+                  <div className="text-sm font-bold text-white truncate">{user?.name}</div>
+                  <div className="text-[11px] text-slate-400 truncate">{user?.email}</div>
+                </div>
+              </div>
+              <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md border capitalize shrink-0 ${roleBadgeColor[user?.role]}`}>
+                {roleTitle[user?.role]}
+              </span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-800">
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 px-3 rounded-xl text-center text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+              >
+                Log In
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-2.5 px-3 rounded-xl text-center text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/25 transition-all"
+              >
+                Register
+              </Link>
+            </div>
+          )}
+
+          {/* Navigation Links */}
+          <div className="space-y-1 text-sm font-medium">
+            <Link
+              to="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${
+                location.pathname === '/' ? 'bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-300 hover:bg-slate-800/60'
+              }`}
+            >
+              <Building2 className="h-4 w-4 text-cyan-400" />
+              <span>Home</span>
+            </Link>
+
+            <Link
+              to="/hotels"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${
+                location.pathname.startsWith('/hotels') ? 'bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-300 hover:bg-slate-800/60'
+              }`}
+            >
+              <Building2 className="h-4 w-4 text-cyan-400" />
+              <span>Explore Hotels</span>
+            </Link>
+
+            {isAuthenticated && user?.role === 'customer' && (
+              <>
+                <Link
+                  to="/customer/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${
+                    location.pathname === '/customer/dashboard' ? 'bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-300 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <LayoutDashboard className="h-4 w-4 text-blue-400" />
+                  <span>Customer Dashboard</span>
+                </Link>
+
+                <Link
+                  to="/my-bookings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${
+                    location.pathname.startsWith('/my-bookings') ? 'bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-300 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <CalendarCheck className="h-4 w-4 text-cyan-400" />
+                  <span>My Bookings</span>
+                </Link>
+              </>
+            )}
+
+            {isAuthenticated && user?.role === 'hotel_manager' && (
+              <Link
+                to="/manager/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${
+                  location.pathname.startsWith('/manager') ? 'bg-purple-500/10 text-purple-400 font-bold border border-purple-500/30' : 'text-purple-300 hover:bg-slate-800/60'
+                }`}
+              >
+                <Briefcase className="h-4 w-4 text-purple-400" />
+                <span>Manager Dashboard</span>
+              </Link>
+            )}
+
+            {isAuthenticated && user?.role === 'admin' && (
+              <Link
+                to="/admin/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${
+                  location.pathname.startsWith('/admin') ? 'bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30' : 'text-emerald-300 hover:bg-slate-800/60'
+                }`}
+              >
+                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                <span>Admin Dashboard</span>
+              </Link>
+            )}
+
+            {isAuthenticated && (
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors ${
+                  location.pathname === '/profile' ? 'bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30' : 'text-slate-300 hover:bg-slate-800/60'
+                }`}
+              >
+                <User className="h-4 w-4 text-cyan-400" />
+                <span>My Profile</span>
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Log Out Action */}
+          {isAuthenticated && (
+            <div className="pt-2 border-t border-slate-800">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out of Account</span>
+              </button>
+            </div>
+          )}
+
+        </div>
+      )}
     </nav>
   );
 };

@@ -4,7 +4,7 @@ import { Building2, Mail, Phone, MapPin, Heart, ShieldCheck } from 'lucide-react
 
 const Footer = () => {
   return (
-    <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 text-sm">
+    <footer className="site-footer bg-slate-900 border-t border-slate-800 text-slate-400 text-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           
@@ -17,11 +17,11 @@ const Footer = () => {
               <span className="font-bold text-xl text-white tracking-wide">GrandStay</span>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed">
-              University / BIM Final Year Project. Experience seamless luxury hotel discovery, real-time availability checks, and multi-role booking management.
+              Discover memorable stays, compare real-time availability, and manage every reservation in one place.
             </p>
             <div className="flex items-center gap-2 text-xs text-emerald-400">
               <ShieldCheck className="h-4 w-4" />
-              <span>Verified REST API & Database</span>
+              <span>Thoughtful stays, simpler booking</span>
             </div>
           </div>
 
@@ -71,7 +71,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-slate-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} GrandStay Hotel Booking System. Developed for University / BIM Project.</p>
+          <p>© {new Date().getFullYear()} GrandStay. All rights reserved.</p>
           <div className="flex items-center gap-1">
             <span>Built with</span>
             <Heart className="h-3.5 w-3.5 text-red-500 fill-current" />

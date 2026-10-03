@@ -113,24 +113,24 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-950 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="customer-page min-h-[calc(100vh-4rem)] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl space-y-7">
         
         {/* Header Badge */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+        <div className="customer-surface flex flex-col items-center justify-between gap-5 rounded-xl border p-5 sm:flex-row sm:p-7">
           <div className="flex items-center gap-5">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white font-extrabold text-2xl flex items-center justify-center shadow-lg shadow-cyan-500/25">
+            <div className="customer-avatar flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold text-white">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-extrabold text-white">{user?.name}</h1>
+                <h1 className="font-display text-3xl text-ink">{user?.name}</h1>
                 <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-md border capitalize ${roleBadgeColor[user?.role]}`}>
                   {user?.role?.replace('_', ' ')}
                 </span>
               </div>
-              <p className="text-slate-400 text-sm mt-0.5">{user?.email}</p>
-              <div className="text-xs text-slate-500 mt-1">
+              <p className="mt-1 text-sm text-slate-500">{user?.email}</p>
+              <div className="mt-1 text-xs text-slate-500">
                 Account Status: <span className="text-emerald-400 font-semibold uppercase">{user?.status}</span>
               </div>
             </div>
@@ -138,17 +138,17 @@ const Profile = () => {
         </div>
 
         {/* Profile & Password Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           
           {/* Edit Profile Form */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <User className="h-5 w-5 text-cyan-400" />
+          <div className="customer-surface rounded-xl border p-5 sm:p-6">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-ink">
+              <User className="h-5 w-5 text-forest-600" />
               Edit Profile Information
             </h2>
 
             {profileMsg.text && (
-              <div className={`mb-4 p-3 rounded-xl text-xs flex items-center gap-2 border ${
+              <div className={`customer-action-message mb-4 flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm ${
                 profileMsg.type === 'success'
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   : 'bg-red-500/10 text-red-400 border-red-500/30'
@@ -167,7 +167,7 @@ const Profile = () => {
                   type="text"
                   value={profileData.name}
                   onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="customer-field w-full rounded-lg border px-4 py-3 text-sm"
                   required
                 />
               </div>
@@ -180,7 +180,7 @@ const Profile = () => {
                   type="email"
                   value={user?.email || ''}
                   disabled
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950/50 border border-slate-800 text-slate-500 text-sm cursor-not-allowed"
+                  className="customer-field w-full cursor-not-allowed rounded-lg border px-4 py-3 text-sm"
                 />
               </div>
 
@@ -193,14 +193,14 @@ const Profile = () => {
                   value={profileData.phone}
                   onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   placeholder="+977 9800000000"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="customer-field w-full rounded-lg border px-4 py-3 text-sm"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={profileLoading}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-500 transition-all disabled:opacity-50 mt-2"
+                className="customer-primary-button mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold text-white disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
                 <span>{profileLoading ? 'Saving...' : 'Save Profile Changes'}</span>
@@ -209,14 +209,14 @@ const Profile = () => {
           </div>
 
           {/* Change Password Form */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <KeyRound className="h-5 w-5 text-purple-400" />
+          <div className="customer-surface rounded-xl border p-5 sm:p-6">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-ink">
+              <KeyRound className="h-5 w-5 text-forest-600" />
               Change Account Password
             </h2>
 
             {passMsg.text && (
-              <div className={`mb-4 p-3 rounded-xl text-xs flex items-center gap-2 border ${
+              <div className={`customer-action-message mb-4 flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm ${
                 passMsg.type === 'success'
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   : 'bg-red-500/10 text-red-400 border-red-500/30'
@@ -236,7 +236,7 @@ const Profile = () => {
                   value={passData.currentPassword}
                   onChange={(e) => setPassData({ ...passData, currentPassword: e.target.value })}
                   placeholder="••••••••"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="customer-field w-full rounded-lg border px-4 py-3 text-sm"
                   required
                 />
               </div>
@@ -250,7 +250,7 @@ const Profile = () => {
                   value={passData.newPassword}
                   onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
                   placeholder="At least 6 characters"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="customer-field w-full rounded-lg border px-4 py-3 text-sm"
                   required
                 />
               </div>
@@ -264,7 +264,7 @@ const Profile = () => {
                   value={passData.confirmPassword}
                   onChange={(e) => setPassData({ ...passData, confirmPassword: e.target.value })}
                   placeholder="Repeat new password"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="customer-field w-full rounded-lg border px-4 py-3 text-sm"
                   required
                 />
               </div>
@@ -272,7 +272,7 @@ const Profile = () => {
               <button
                 type="submit"
                 disabled={passLoading}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 transition-all disabled:opacity-50 mt-2"
+                className="customer-primary-button mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold text-white disabled:opacity-50"
               >
                 <Lock className="h-4 w-4" />
                 <span>{passLoading ? 'Updating...' : 'Update Password'}</span>
@@ -283,10 +283,10 @@ const Profile = () => {
         </div>
 
         {/* Live RBAC Route Guard Tester */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div className="customer-surface rounded-xl border p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-lg font-bold text-white">Live Role-Based Authorization Guard Tester</h2>
+            <h2 className="text-lg font-semibold text-ink">Live Role-Based Authorization Guard Tester</h2>
           </div>
           <p className="text-xs text-slate-400 mb-6">
             Test backend protected API endpoints using your active account's JWT token to verify authorization enforcement.
@@ -296,7 +296,7 @@ const Profile = () => {
             <button
               onClick={() => runRbacTest('Customer Test Route', '/auth/customer-test')}
               disabled={!!testingEndpoint}
-              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold bg-slate-950 hover:bg-slate-800 border border-slate-800 text-cyan-400 transition-all"
+              className="customer-secondary-button flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold"
             >
               <User className="h-4 w-4" />
               <span>Test Customer Endpoint</span>
@@ -305,7 +305,7 @@ const Profile = () => {
             <button
               onClick={() => runRbacTest('Manager Test Route', '/auth/manager-test')}
               disabled={!!testingEndpoint}
-              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold bg-slate-950 hover:bg-slate-800 border border-slate-800 text-purple-400 transition-all"
+              className="customer-secondary-button flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold"
             >
               <Briefcase className="h-4 w-4" />
               <span>Test Manager Endpoint</span>
@@ -314,7 +314,7 @@ const Profile = () => {
             <button
               onClick={() => runRbacTest('Admin Test Route', '/auth/admin-test')}
               disabled={!!testingEndpoint}
-              className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold bg-slate-950 hover:bg-slate-800 border border-slate-800 text-emerald-400 transition-all"
+              className="customer-secondary-button flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold"
             >
               <ShieldCheck className="h-4 w-4" />
               <span>Test Admin Endpoint</span>

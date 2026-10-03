@@ -31,10 +31,12 @@ const Home = () => {
   const [featuredHotels, setFeaturedHotels] = useState([]);
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setDataError('');
       try {
         const [hotelsRes, destRes] = await Promise.all([
           getHotels({ limit: 6, sort: 'rating' }),
@@ -44,6 +46,7 @@ const Home = () => {
         if (destRes.success) setDestinations(destRes.data);
       } catch (err) {
         console.error('Failed to load homepage data:', err);
+        setDataError('We could not load featured stays right now. Please try again shortly.');
       } finally {
         setLoading(false);
       }
@@ -64,30 +67,34 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-white">
+    <div className="home-page min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-white">
       <div>
         
         {/* Hero Section */}
-        <section className="relative min-h-[580px] flex items-center justify-center pt-12 pb-24 px-4 sm:px-6 lg:px-8 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950 overflow-hidden">
-          {/* Background Ambient Glow */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <section className="home-hero relative min-h-[580px] flex items-center justify-center pt-12 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+          <img
+            className="home-hero-image"
+            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2200&q=88"
+            alt="A secluded resort surrounded by lush tropical gardens"
+            fetchpriority="high"
+          />
 
-          <div className="max-w-5xl mx-auto w-full text-center relative z-10">
+          <div className="home-hero-content max-w-6xl mx-auto w-full relative z-10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-cyan-400 text-xs font-semibold mb-6 backdrop-blur-md">
               <Sparkles className="h-4 w-4" />
-              <span>Luxury Stays Across Nepal & Beyond</span>
+              <span>Thoughtful stays across Nepal & beyond</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6 bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-              Discover & Book Exceptional Luxury Hotels
+            <h1 className="text-4xl sm:text-6xl text-white mb-6">
+              Find a stay worth travelling for
             </h1>
 
-            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-              Explore handpicked heritage boutique hotels, lakeside resorts, and mountain sanctuaries with verified real-time availability and transparent pricing.
+            <p className="text-base sm:text-lg max-w-2xl mb-10 leading-relaxed">
+              From quiet mountain hideaways to lakeside retreats, find a place that makes the journey feel complete.
             </p>
 
             {/* Interactive Hotel Search Bar */}
-            <div className="bg-slate-900/90 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-2xl backdrop-blur-xl max-w-4xl mx-auto">
+            <div className="home-search bg-slate-900/90 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-2xl backdrop-blur-xl max-w-5xl">
               <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-left">
                 
                 {/* Destination Input */}
@@ -154,7 +161,7 @@ const Home = () => {
 
                   <button
                     type="submit"
-                    className="h-full px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 flex flex-col items-center justify-center gap-1 transition-all shrink-0"
+                    className="home-button h-full px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 flex flex-col items-center justify-center gap-1 transition-all shrink-0"
                   >
                     <Search className="h-5 w-5" />
                     <span>Search</span>
@@ -185,7 +192,7 @@ const Home = () => {
                 <Link
                   key={index}
                   to={`/hotels?city=${encodeURIComponent(dest.city)}`}
-                  className="group relative h-44 rounded-2xl overflow-hidden shadow-lg border border-slate-800 hover:border-cyan-500/50 transition-all"
+                  className="destination-tile group relative h-44 rounded-2xl overflow-hidden shadow-lg border border-slate-800 hover:border-cyan-500/50 transition-all"
                 >
                   <img
                     src={dest.image}
@@ -221,6 +228,10 @@ const Home = () => {
               {[1, 2, 3].map((n) => (
                 <div key={n} className="h-80 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse"></div>
               ))}
+            </div>
+          ) : dataError ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-6 text-sm text-amber-900" role="status" aria-live="polite">
+              {dataError}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -15,9 +15,12 @@ import {
   Lock
 } from 'lucide-react';
 
-const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose }) => {
+const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, initialGuests, returnTo, onClose }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const requestedGuestCount = Math.max(Number(initialGuests) || 0, 0);
+  const adultCapacity = Math.max(Number(room.capacity?.adults) || 1, 1);
+  const childCapacity = Math.max(Number(room.capacity?.children) || 0, 0);
 
   // Get tomorrow date as default checkIn if not provided
   const getDefaultDates = () => {
@@ -36,13 +39,20 @@ const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose })
   const defaults = getDefaultDates();
   const [checkIn, setCheckIn] = useState(defaults.checkIn);
   const [checkOut, setCheckOut] = useState(defaults.checkOut);
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState(0);
+  const [adults, setAdults] = useState(() => Math.min(
+    Math.max(requestedGuestCount || 1, 1),
+    adultCapacity
+  ));
+  const [children, setChildren] = useState(() => Math.min(
+    Math.max(requestedGuestCount - adultCapacity, 0),
+    childCapacity
+  ));
 
   // Availability & State
   const [availState, setAvailState] = useState({ checking: false, available: null, message: '', pricing: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const loginPath = `/login?${new URLSearchParams({ redirect: returnTo || `/hotels/${hotel._id}` }).toString()}`;
 
   // Perform availability check on date change
   const verifyAvailability = async (cIn, cOut) => {
@@ -86,7 +96,7 @@ const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose })
   const handleConfirmBooking = async () => {
     setErrorMsg('');
     if (!isAuthenticated) {
-      navigate(`/login?redirect=/hotels/${hotel._id}`);
+      navigate(loginPath);
       return;
     }
 
@@ -118,8 +128,8 @@ const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto">
+    <div className="booking-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
+      <div className="booking-modal-panel relative max-h-[90vh] w-full max-w-lg space-y-6 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
         
         {/* Close Button */}
         <button
@@ -154,7 +164,7 @@ const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose })
 
             <button
               type="button"
-              onClick={() => navigate(`/login?redirect=/hotels/${hotel._id}`)}
+              onClick={() => navigate(loginPath)}
               className="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-95 shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2"
             >
               <span>Sign In to Continue</span>
@@ -212,8 +222,8 @@ const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose })
                   onChange={(e) => setAdults(Number(e.target.value))}
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none"
                 >
-                  {[...Array(room.capacity?.adults || 2)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>{i + 1} Adult{i > 0 ? 's' : ''}</option>
+                  {Array.from({ length: adultCapacity }, (_, index) => index + 1).map((adultCount) => (
+                    <option key={adultCount} value={adultCount}>{adultCount} Adult{adultCount > 1 ? 's' : ''}</option>
                   ))}
                 </select>
               </div>
@@ -227,12 +237,20 @@ const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose })
                   onChange={(e) => setChildren(Number(e.target.value))}
                   className="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none"
                 >
-                  <option value="0">0 Children</option>
-                  <option value="1">1 Child</option>
-                  <option value="2">2 Children</option>
+                  {Array.from({ length: childCapacity + 1 }, (_, childCount) => (
+                    <option key={childCount} value={childCount}>
+                      {childCount} {childCount === 1 ? 'Child' : 'Children'}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
+
+            {requestedGuestCount > adultCapacity + childCapacity && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3 text-sm text-amber-900" role="status">
+                Your search includes {requestedGuestCount} guests, but this room accommodates {adultCapacity + childCapacity}. Choose a room that fits your party to keep the original guest count.
+              </div>
+            )}
 
             {/* Live Availability Status Indicator */}
             <div className="p-3.5 rounded-xl border border-slate-800 bg-slate-950 text-xs flex items-center justify-between">
@@ -244,8 +262,8 @@ const BookingModal = ({ hotel, room, initialCheckIn, initialCheckOut, onClose })
                 ) : (
                   <XCircle className="h-4 w-4 text-red-400" />
                 )}
-                <span className={availState.available ? 'text-emerald-400 font-semibold' : 'text-slate-300'}>
-                  {availState.checking ? 'Verifying dates availability...' : availState.message}
+                <span className={availState.available ? 'text-emerald-400 font-semibold' : 'text-slate-300'} aria-live="polite">
+                  {availState.checking ? 'Checking these dates...' : availState.message || 'Select stay dates to check availability'}
                 </span>
               </div>
             </div>

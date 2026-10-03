@@ -29,6 +29,7 @@ const Login = () => {
   const searchParams = new URLSearchParams(location.search);
   const redirectParam = searchParams.get('redirect');
   const from = redirectParam || location.state?.from?.pathname || '/';
+  const sessionExpired = searchParams.get('expired') === 'true';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,8 +41,15 @@ const Login = () => {
     }
 
     setIsSubmitting(true);
-    const result = await login(email, password);
-    setIsSubmitting(false);
+    let result;
+    try {
+      result = await login(email, password);
+    } catch (err) {
+      console.error('Login request failed:', err);
+      result = { success: false, message: 'We could not sign you in right now. Please try again.' };
+    } finally {
+      setIsSubmitting(false);
+    }
 
     if (result.success) {
       // Role-based smart redirection
@@ -53,7 +61,9 @@ const Login = () => {
         navigate(from === '/login' ? '/' : from);
       }
     } else {
-      setFormError(result.message);
+      setFormError(result.message === 'Invalid email or password'
+        ? 'The email address or password is incorrect. Check your details and try again.'
+        : result.message || 'Sign in could not be completed. Please try again.');
     }
   };
 
@@ -65,30 +75,36 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-cyan-500 selection:text-white">
+    <div className="customer-page account-page min-h-[calc(100vh-4rem)] flex flex-col justify-center px-4 py-10 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-xl shadow-cyan-500/25">
+          <div className="account-mark flex h-12 w-12 items-center justify-center rounded-xl text-white">
             <Building2 className="h-6 w-6 text-white" />
           </div>
         </div>
-        <h2 className="mt-4 text-center text-3xl font-extrabold text-white tracking-tight">
+        <h1 className="mt-4 text-center font-display text-3xl text-ink">
           Welcome Back
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-400">
+        </h1>
+        <p className="mt-2 text-center text-sm text-slate-500">
           Sign in to your GrandStay Hotel account
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-4 shadow-2xl rounded-2xl sm:px-10 backdrop-blur-xl">
+        <div className="account-panel rounded-xl border px-5 py-7 sm:px-9">
           
           {/* Error Banner */}
+          {sessionExpired && !formError && (
+            <div className="customer-auth-notice mb-5 rounded-lg border px-4 py-3 text-sm" role="status">
+              Your session expired. Please sign in again to continue.
+            </div>
+          )}
+
           {formError && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 text-red-400 text-sm">
+            <div className="customer-error-state mb-6 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm" role="alert" aria-live="polite">
               <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
               <div>
-                <span className="font-semibold block">Authentication Error</span>
+                <span className="mb-0.5 block font-semibold">Sign-in problem</span>
                 {formError}
               </div>
             </div>
@@ -97,7 +113,7 @@ const Login = () => {
           <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Email Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label htmlFor="login-email" className="mb-2 block text-sm font-semibold text-ink">
                 Email Address
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -106,10 +122,11 @@ const Login = () => {
                 </div>
                 <input
                   type="email"
+                  id="login-email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="block w-full pl-11 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+                  className="customer-field block w-full rounded-lg border py-3 pl-11 pr-4 text-sm"
                   required
                 />
               </div>
@@ -117,7 +134,7 @@ const Login = () => {
 
             {/* Password Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label htmlFor="login-password" className="mb-2 block text-sm font-semibold text-ink">
                 Password
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -126,14 +143,16 @@ const Login = () => {
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  id="login-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="block w-full pl-11 pr-11 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+                  className="customer-field block w-full rounded-lg border py-3 pl-11 pr-11 text-sm"
                   required
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300"
                 >
@@ -147,7 +166,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 shadow-lg shadow-cyan-500/25 transition-all disabled:opacity-50"
+                  className="customer-primary-button flex min-h-12 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold text-white disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -165,7 +184,7 @@ const Login = () => {
           </form>
 
           {/* Registration Redirect */}
-          <div className="mt-6 text-center text-xs text-slate-400">
+          <div className="mt-6 text-center text-sm text-slate-500">
             Don't have an account yet?{' '}
             <Link to="/register" className="font-semibold text-cyan-400 hover:text-cyan-300 hover:underline">
               Create Account
@@ -173,8 +192,8 @@ const Login = () => {
           </div>
 
           {/* Quick Demo Login Pre-fill Buttons */}
-          <div className="mt-8 pt-6 border-t border-slate-800">
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center mb-3">
+          <div className="mt-8 border-t border-slate-200 pt-6">
+            <p className="mb-3 text-center text-xs font-semibold text-slate-500">
               Testing Quick-Fill Accounts
             </p>
             <div className="grid grid-cols-3 gap-2">

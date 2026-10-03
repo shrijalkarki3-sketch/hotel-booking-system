@@ -55,8 +55,15 @@ const Register = () => {
     }
 
     setIsSubmitting(true);
-    const result = await register({ name, email, password, phone, role });
-    setIsSubmitting(false);
+    let result;
+    try {
+      result = await register({ name, email, password, phone, role });
+    } catch (err) {
+      console.error('Registration request failed:', err);
+      result = { success: false, message: 'We could not create your account right now. Please try again.' };
+    } finally {
+      setIsSubmitting(false);
+    }
 
     if (result.success) {
       if (role === 'hotel_manager') {
@@ -65,35 +72,35 @@ const Register = () => {
         navigate('/');
       }
     } else {
-      setFormError(result.message);
+      setFormError(result.message || 'Registration could not be completed. Please check your details and try again.');
     }
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-cyan-500 selection:text-white">
+    <div className="customer-page account-page min-h-[calc(100vh-4rem)] flex flex-col justify-center px-4 py-10 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-xl shadow-cyan-500/25">
+          <div className="account-mark flex h-12 w-12 items-center justify-center rounded-xl text-white">
             <Building2 className="h-6 w-6 text-white" />
           </div>
         </div>
-        <h2 className="mt-4 text-center text-3xl font-extrabold text-white tracking-tight">
+        <h1 className="mt-4 text-center font-display text-3xl text-ink">
           Create an Account
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-400">
+        </h1>
+        <p className="mt-2 text-center text-sm text-slate-500">
           Join GrandStay to book hotels or list your property
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-4 shadow-2xl rounded-2xl sm:px-10 backdrop-blur-xl">
+        <div className="account-panel rounded-xl border px-5 py-7 sm:px-9">
           
           {/* Error Banner */}
           {formError && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 text-red-400 text-sm">
+            <div className="customer-error-state mb-6 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm" role="alert" aria-live="polite">
               <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
               <div>
-                <span className="font-semibold block">Registration Error</span>
+                <span className="mb-0.5 block font-semibold">Registration problem</span>
                 {formError}
               </div>
             </div>
@@ -101,17 +108,18 @@ const Register = () => {
 
           {/* Role Selection Tabs */}
           <div className="mb-6">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="mb-2 block text-sm font-semibold text-ink">
               Select Account Type
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, role: 'customer' })}
+                aria-pressed={formData.role === 'customer'}
                 className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all ${
                   formData.role === 'customer'
                     ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50 shadow-lg shadow-cyan-500/10'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                    : 'bg-white text-slate-500 border-slate-200 hover:text-ink'
                 }`}
               >
                 <User className="h-4 w-4" />
@@ -121,10 +129,11 @@ const Register = () => {
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, role: 'hotel_manager' })}
+                aria-pressed={formData.role === 'hotel_manager'}
                 className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all ${
                   formData.role === 'hotel_manager'
                     ? 'bg-purple-500/20 text-purple-400 border-purple-500/50 shadow-lg shadow-purple-500/10'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                    : 'bg-white text-slate-500 border-slate-200 hover:text-ink'
                 }`}
               >
                 <Briefcase className="h-4 w-4" />
@@ -136,7 +145,7 @@ const Register = () => {
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Full Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label htmlFor="register-name" className="mb-1.5 block text-sm font-semibold text-ink">
                 Full Name *
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -145,11 +154,12 @@ const Register = () => {
                 </div>
                 <input
                   type="text"
+                  id="register-name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="John Doe"
-                  className="block w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+                  className="customer-field block w-full rounded-lg border py-3 pl-11 pr-4 text-sm"
                   required
                 />
               </div>
@@ -157,7 +167,7 @@ const Register = () => {
 
             {/* Email Address */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label htmlFor="register-email" className="mb-1.5 block text-sm font-semibold text-ink">
                 Email Address *
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -166,11 +176,12 @@ const Register = () => {
                 </div>
                 <input
                   type="email"
+                  id="register-email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="name@example.com"
-                  className="block w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+                  className="customer-field block w-full rounded-lg border py-3 pl-11 pr-4 text-sm"
                   required
                 />
               </div>
@@ -178,7 +189,7 @@ const Register = () => {
 
             {/* Phone Number */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label htmlFor="register-phone" className="mb-1.5 block text-sm font-semibold text-ink">
                 Phone Number
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -187,18 +198,19 @@ const Register = () => {
                 </div>
                 <input
                   type="text"
+                  id="register-phone"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="+977 9800000000"
-                  className="block w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+                  className="customer-field block w-full rounded-lg border py-3 pl-11 pr-4 text-sm"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label htmlFor="register-password" className="mb-1.5 block text-sm font-semibold text-ink">
                 Password *
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -207,11 +219,12 @@ const Register = () => {
                 </div>
                 <input
                   type="password"
+                  id="register-password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="At least 6 characters"
-                  className="block w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+                  className="customer-field block w-full rounded-lg border py-3 pl-11 pr-4 text-sm"
                   required
                 />
               </div>
@@ -219,7 +232,7 @@ const Register = () => {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label htmlFor="register-confirm-password" className="mb-1.5 block text-sm font-semibold text-ink">
                 Confirm Password *
               </label>
               <div className="relative rounded-xl shadow-sm">
@@ -228,11 +241,12 @@ const Register = () => {
                 </div>
                 <input
                   type="password"
+                  id="register-confirm-password"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Repeat password"
-                  className="block w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm transition-all"
+                  className="customer-field block w-full rounded-lg border py-3 pl-11 pr-4 text-sm"
                   required
                 />
               </div>
@@ -243,7 +257,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 shadow-lg shadow-cyan-500/25 transition-all disabled:opacity-50"
+                className="customer-primary-button flex min-h-12 w-full items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold text-white disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -261,7 +275,7 @@ const Register = () => {
           </form>
 
           {/* Login Redirect */}
-          <div className="mt-6 text-center text-xs text-slate-400">
+          <div className="mt-6 text-center text-sm text-slate-500">
             Already have an account?{' '}
             <Link to="/login" className="font-semibold text-cyan-400 hover:text-cyan-300 hover:underline">
               Log In Instead

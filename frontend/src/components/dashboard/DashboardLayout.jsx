@@ -18,7 +18,7 @@ import {
   Search
 } from 'lucide-react';
 
-const DashboardLayout = ({ children, title, subtitle }) => {
+const DashboardLayout = ({ children, title, subtitle, className = '' }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -60,10 +60,10 @@ const DashboardLayout = ({ children, title, subtitle }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans selection:bg-cyan-500 selection:text-white">
+    <div className={`${className} min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans selection:bg-cyan-500 selection:text-white`}>
       
       {/* Mobile Topbar Bar */}
-      <div className="md:hidden bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <div className="dashboard-mobile-topbar md:hidden bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-cyan-500 flex items-center justify-center text-white font-bold">
             <Building2 className="h-4 w-4" />
@@ -78,9 +78,18 @@ const DashboardLayout = ({ children, title, subtitle }) => {
         </button>
       </div>
 
+      {/* Mobile Backdrop Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 md:hidden animate-in fade-in"
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-4 sticky top-0 h-screen z-30 transition-transform md:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0 fixed inset-y-0 left-0 bg-slate-900' : '-translate-x-full md:block hidden'
+      <aside className={`dashboard-sidebar w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-4 sticky top-0 h-screen z-40 transition-transform duration-200 md:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0 fixed inset-y-0 left-0 bg-slate-900 shadow-2xl' : '-translate-x-full md:block hidden'
       }`}>
         <div className="space-y-6">
           
@@ -148,7 +157,7 @@ const DashboardLayout = ({ children, title, subtitle }) => {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Workspace Top Header */}
-        <header className="bg-slate-900/60 border-b border-slate-800 py-4 px-6 sm:px-8 flex items-center justify-between">
+        <header className="dashboard-header bg-slate-900/60 border-b border-slate-800 py-4 px-6 sm:px-8 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-extrabold text-white tracking-tight">{title}</h1>
             {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
@@ -161,7 +170,7 @@ const DashboardLayout = ({ children, title, subtitle }) => {
           </div>
         </header>
 
-        <main className="p-6 sm:p-8 flex-1 overflow-y-auto space-y-8">
+        <main className="dashboard-content p-6 sm:p-8 flex-1 overflow-y-auto space-y-8">
           {children}
         </main>
       </div>

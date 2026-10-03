@@ -14,14 +14,14 @@ const RoomCard = ({ room, onSelect, onSelectRoom, isSelected }) => {
   };
 
   return (
-    <div className={`bg-slate-900 border rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col md:flex-row ${
+    <div className={`room-card bg-slate-900 border rounded-2xl overflow-hidden shadow-xl transition-all duration-300 flex flex-col md:flex-row ${
       isSelected 
         ? 'border-cyan-500 ring-2 ring-cyan-500/20 bg-cyan-950/10' 
         : 'border-slate-800 hover:border-slate-700'
     }`}>
       
       {/* Room Image */}
-      <div className="relative md:w-64 h-48 md:h-auto shrink-0 bg-slate-950">
+      <div className="room-image relative md:w-64 h-48 md:h-auto shrink-0 bg-slate-950">
         <img
           src={roomImg}
           alt={room.roomType}
@@ -83,7 +83,7 @@ const RoomCard = ({ room, onSelect, onSelectRoom, isSelected }) => {
             type="button"
             onClick={handleBookClick}
             disabled={room.status !== 'available'}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`room-booking-button min-h-11 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
               room.status !== 'available'
                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
                 : isSelected

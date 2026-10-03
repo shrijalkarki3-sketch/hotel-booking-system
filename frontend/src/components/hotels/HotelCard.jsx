@@ -1,16 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Star, Wifi, Coffee, Sparkles, ArrowRight } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { MapPin, Star, Sparkles, ArrowRight } from 'lucide-react';
 
 const HotelCard = ({ hotel }) => {
+  const location = useLocation();
   const defaultImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80';
   const coverImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : defaultImage;
+  const rating = Number(hotel.rating?.average) || 0;
+  const reviewCount = Number(hotel.rating?.count) || 0;
+  const startingPrice = Number(hotel.startingPrice) || 0;
+  const locationText = [hotel.location?.address, hotel.location?.city].filter(Boolean).join(', ');
+  const hotelUrl = `/hotels/${hotel._id}${location.search}`;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-slate-700 transition-all duration-300 flex flex-col group">
-      
-      {/* Image Container */}
-      <div className="relative h-52 w-full overflow-hidden bg-slate-950">
+    <div className="hotel-card bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-slate-700 transition-all duration-300 flex flex-col group">
+      <div className="hotel-card-media relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
         <img
           src={coverImage}
           alt={hotel.name}
@@ -19,49 +23,53 @@ const HotelCard = ({ hotel }) => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
         
-        {/* City Badge */}
-        <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-white border border-slate-700/60 flex items-center gap-1">
+        {hotel.location?.city && (
+          <div className="hotel-location-badge absolute bottom-3 left-3 rounded-full border border-slate-700/60 bg-slate-900/85 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md flex items-center gap-1.5">
           <MapPin className="h-3.5 w-3.5 text-cyan-400" />
-          <span>{hotel.location?.city || 'Nepal'}</span>
-        </div>
+            <span>{hotel.location.city}</span>
+          </div>
+        )}
 
-        {/* Rating Badge */}
-        <div className="absolute top-3 right-3 bg-amber-500/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-slate-950 flex items-center gap-1 shadow-lg">
-          <Star className="h-3.5 w-3.5 fill-current" />
-          <span>{hotel.rating?.average ? hotel.rating.average.toFixed(1) : '4.8'}</span>
-        </div>
+        {rating > 0 && (
+          <div className="hotel-rating-badge absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1.5 text-xs font-bold text-ink shadow-lg">
+            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+            <span>{rating.toFixed(1)}</span>
+          </div>
+        )}
       </div>
 
-      {/* Card Content */}
-      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+      <div className="flex flex-1 flex-col justify-between gap-5 p-5 sm:p-6">
         <div>
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-            <span className="truncate">{hotel.location?.address}</span>
-            <span className="text-slate-500">({hotel.rating?.count || 12} reviews)</span>
-          </div>
-
-          <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-1">
+          {locationText && <p className="mb-2 truncate text-xs text-slate-500">{locationText}</p>}
+          <h3 className="line-clamp-2 text-xl font-semibold leading-snug text-white transition-colors group-hover:text-cyan-400">
             {hotel.name}
           </h3>
+          {reviewCount > 0 && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+              {rating > 0 && <span className="font-semibold text-slate-700">{rating.toFixed(1)}</span>}
+              <span>{reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}</span>
+            </p>
+          )}
+          {hotel.description && (
+            <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-slate-500">
+              {hotel.description}
+            </p>
+          )}
 
-          <p className="text-slate-400 text-xs mt-2 line-clamp-2 leading-relaxed">
-            {hotel.description}
-          </p>
-
-          {/* Key Amenities */}
           {hotel.amenities && hotel.amenities.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
+            <div className="mt-4 flex flex-wrap gap-2">
               {hotel.amenities.slice(0, 3).map((amenity, idx) => (
                 <span
                   key={idx}
-                  className="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700/60 flex items-center gap-1"
+                  className="flex items-center gap-1.5 rounded-md border border-slate-700/60 bg-slate-800 px-2.5 py-1 text-xs text-slate-600"
                 >
                   <Sparkles className="h-2.5 w-2.5 text-cyan-400" />
                   {amenity}
                 </span>
               ))}
               {hotel.amenities.length > 3 && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800/60 text-slate-500">
+                <span className="rounded-md bg-slate-800/60 px-2 py-1 text-xs text-slate-500">
                   +{hotel.amenities.length - 3} more
                 </span>
               )}
@@ -69,24 +77,25 @@ const HotelCard = ({ hotel }) => {
           )}
         </div>
 
-        {/* Pricing & Call to Action */}
-        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+        <div className="flex items-end justify-between gap-3 border-t border-slate-800/80 pt-4">
           <div>
-            <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">Starting from</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-extrabold text-cyan-400">
-                ${hotel.startingPrice > 0 ? hotel.startingPrice : 50}
-              </span>
-              <span className="text-xs text-slate-400">/ night</span>
-            </div>
+            <span className="block text-xs font-medium text-slate-500">{startingPrice > 0 ? 'Starting from' : 'Room rates'}</span>
+            {startingPrice > 0 ? (
+              <p className="mt-0.5 flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-cyan-400">${startingPrice}</span>
+                <span className="text-xs text-slate-500">/ night</span>
+              </p>
+            ) : (
+              <p className="mt-0.5 text-sm font-semibold text-slate-700">See room options</p>
+            )}
           </div>
 
           <Link
-            to={`/hotels/${hotel._id}`}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-95 shadow-md shadow-cyan-500/20 transition-all"
+            to={hotelUrl}
+            className="hotel-card-cta inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-500/20 transition-all hover:opacity-95"
           >
-            <span>Book Now</span>
-            <ArrowRight className="h-3.5 w-3.5" />
+            <span>View stay</span>
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
