@@ -31,13 +31,14 @@ router.get('/:id', getHotelById);
 router.use(protect);
 router.use(authorize('hotel_manager', 'admin'));
 
-router.post('/', createHotel);
-router.put('/:id', updateHotel);
-router.delete('/:id', deleteHotel);
-
-// Room Management Routes
+// Room Management Routes (must precede /:id routes)
 router.post('/:hotelId/rooms', createRoom);
 router.put('/rooms/:id', updateRoom);
 router.delete('/rooms/:id', deleteRoom);
+
+// Hotel Management Routes
+router.post('/', createHotel);
+router.put('/:id', updateHotel);
+router.delete('/:id', deleteHotel);
 
 export default router;

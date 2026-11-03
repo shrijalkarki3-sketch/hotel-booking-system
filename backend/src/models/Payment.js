@@ -22,15 +22,31 @@ const paymentSchema = new mongoose.Schema(
       enum: ['card', 'khalti', 'esewa', 'bank_transfer', 'cash_at_hotel'],
       required: [true, 'Please specify payment method'],
     },
+    gateway: {
+      type: String,
+      default: 'mock',
+    },
+    currency: {
+      type: String,
+      default: 'USD',
+    },
     transactionId: {
       type: String,
       required: true,
       unique: true,
     },
+    gatewayReference: {
+      type: String,
+      default: '',
+    },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'completed', 'failed', 'refunded'],
-      default: 'pending',
+      enum: ['initiated', 'pending', 'completed', 'failed', 'refunded', 'cancelled'],
+      default: 'initiated',
+    },
+    failureReason: {
+      type: String,
+      default: '',
     },
     paidAt: {
       type: Date,

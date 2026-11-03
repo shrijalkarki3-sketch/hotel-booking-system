@@ -43,8 +43,10 @@ const roomSchema = new mongoose.Schema(
   }
 );
 
-// Compound Index for fast lookup by hotel & status
+// Query patterns for hotel detail pages and filtering
 roomSchema.index({ hotelId: 1, status: 1 });
+roomSchema.index({ hotelId: 1, status: 1, pricePerNight: 1 });
+roomSchema.index({ status: 1, roomType: 1, 'capacity.adults': 1 });
 
 const Room = mongoose.model('Room', roomSchema);
 export default Room;

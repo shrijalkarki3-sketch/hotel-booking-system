@@ -2,6 +2,15 @@
  * Date and Booking Validation Helper Utilities
  */
 
+const normalizeDateOnly = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
 /**
  * Calculate difference in nights between check-in and check-out
  * @param {Date|string} checkIn
@@ -9,11 +18,15 @@
  * @returns {number} Number of nights
  */
 export const calculateNights = (checkIn, checkOut) => {
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
+  const start = normalizeDateOnly(checkIn);
+  const end = normalizeDateOnly(checkOut);
+
+  if (!start || !end) {
+    return 0;
+  }
+
   const diffTime = end.getTime() - start.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
-  return diffDays;
+  return diffTime / (1000 * 3600 * 24);
 };
 
 /**
@@ -27,12 +40,12 @@ export const validateBookingDates = (checkIn, checkOut) => {
     return { valid: false, message: 'Please provide both check-in and check-out dates' };
   }
 
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
+  const start = normalizeDateOnly(checkIn);
+  const end = normalizeDateOnly(checkOut);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+  if (!start || !end) {
     return { valid: false, message: 'Invalid check-in or check-out date format' };
   }
 
@@ -68,7 +81,7 @@ export const canCancelBooking = (booking) => {
   }
 
   // Check-in date check: Policy allows cancellation before or on check-in date
-  const checkInDate = new Date(booking.checkIn);
+  const checkInDate = normalizeDateOnly(booking.checkIn);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

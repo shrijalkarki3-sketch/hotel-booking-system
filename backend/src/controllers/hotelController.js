@@ -21,21 +21,23 @@ export const getHotels = async (req, res, next) => {
       guests,
       sort,
       page = 1,
-      limit = 10,
+      limit = 12,
     } = req.query;
 
     const query = { status: 'active' };
+    const normalizedSearch = typeof search === 'string' ? search.trim() : '';
+    const normalizedCity = typeof city === 'string' ? city.trim() : '';
 
     // 1. Keyword & Location Search
-    if (search) {
+    if (normalizedSearch) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { 'location.city': { $regex: search, $options: 'i' } },
-        { 'location.address': { $regex: search, $options: 'i' } },
-        { 'location.country': { $regex: search, $options: 'i' } },
+        { name: { $regex: normalizedSearch, $options: 'i' } },
+        { 'location.city': { $regex: normalizedSearch, $options: 'i' } },
+        { 'location.address': { $regex: normalizedSearch, $options: 'i' } },
+        { 'location.country': { $regex: normalizedSearch, $options: 'i' } },
       ];
-    } else if (city) {
-      query['location.city'] = { $regex: city, $options: 'i' };
+    } else if (normalizedCity) {
+      query['location.city'] = { $regex: normalizedCity, $options: 'i' };
     }
 
     // 2. Minimum Rating Filter
@@ -78,8 +80,9 @@ export const getHotels = async (req, res, next) => {
     }
 
     // 5. Pagination setup
-    const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.max(1, parseInt(limit, 10));
+    const pageNum = Number.isInteger(Number(page)) ? Math.max(1, Number(page)) : 1;
+    const requestedLimit = Number(limit);
+    const limitNum = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 24) : 12;
     const startIndex = (pageNum - 1) * limitNum;
 
     // 6. Sorting Setup
@@ -177,8 +180,8 @@ export const getHotelById = async (req, res, next) => {
 
     const rooms = await Room.find(roomQuery).sort({ pricePerNight: 1 }).lean();
 
-    // Fetch published reviews
-    const reviews = await Review.find({ hotelId: req.params.id, status: 'published' })
+    // Fetch published/approved reviews
+    const reviews = await Review.find({ hotelId: req.params.id, status: { $in: ['published', 'approved'] } })
       .populate('userId', 'name profileImage')
       .sort({ createdAt: -1 })
       .limit(10)

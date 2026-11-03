@@ -49,8 +49,13 @@ const hotelSchema = new mongoose.Schema(
   }
 );
 
-// Text Index for Search
+// Text index for direct keyword search
 hotelSchema.index({ name: 'text', 'location.city': 'text', 'location.address': 'text' });
+
+// Query patterns used by homepage and search results
+hotelSchema.index({ status: 1, 'location.city': 1 });
+hotelSchema.index({ status: 1, 'rating.average': -1 });
+hotelSchema.index({ managerId: 1, status: 1 });
 
 const Hotel = mongoose.model('Hotel', hotelSchema);
 export default Hotel;

@@ -13,7 +13,7 @@ const recalculateHotelRating = async (hotelId) => {
   const hId = new mongoose.Types.ObjectId(hotelId);
 
   const stats = await Review.aggregate([
-    { $match: { hotelId: hId, status: 'approved' } },
+    { $match: { hotelId: hId, status: { $in: ['approved', 'published'] } } },
     {
       $group: {
         _id: null,
@@ -146,14 +146,14 @@ export const createReview = async (req, res, next) => {
       });
     }
 
-    // 4. Create Review (Default status: approved for verified stay reviews)
+    // 4. Create Review (Default status: published for verified stay reviews)
     const review = await Review.create({
       userId,
       hotelId,
       bookingId,
       rating: ratingNum,
       comment: comment.trim(),
-      status: 'approved',
+      status: 'published',
     });
 
     // 5. Recalculate Hotel Average Rating
@@ -198,7 +198,7 @@ export const getHotelReviews = async (req, res, next) => {
 
     // 1. Calculate Rating Distribution (1 to 5 stars percentages)
     const distributionRaw = await Review.aggregate([
-      { $match: { hotelId: hId, status: 'approved' } },
+      { $match: { hotelId: hId, status: { $in: ['approved', 'published'] } } },
       {
         $group: {
           _id: '$rating',
@@ -216,9 +216,9 @@ export const getHotelReviews = async (req, res, next) => {
       distributionPct[item._id] = totalApproved > 0 ? Math.round((item.count / totalApproved) * 100) : 0;
     });
 
-    // 2. Fetch paginated approved reviews
-    const total = await Review.countDocuments({ hotelId, status: 'approved' });
-    const reviews = await Review.find({ hotelId, status: 'approved' })
+    // 2. Fetch paginated approved/published reviews
+    const total = await Review.countDocuments({ hotelId, status: { $in: ['approved', 'published'] } });
+    const reviews = await Review.find({ hotelId, status: { $in: ['approved', 'published'] } })
       .populate('userId', 'name profileImage')
       .sort({ createdAt: -1 })
       .skip(startIndex)

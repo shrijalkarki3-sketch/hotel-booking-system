@@ -43,6 +43,92 @@ export const getUsers = async (req, res, next) => {
 };
 
 /**
+ * @desc    Get a single user record for admin moderation (Admin only)
+ * @route   GET /api/v1/users/:id
+ * @access  Private/Admin
+ */
+export const getUserById = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Update a user account profile in a safe admin-controlled way
+ * @route   PATCH /api/v1/users/:id
+ * @access  Private/Admin
+ */
+export const updateUser = async (req, res, next) => {
+  try {
+    const { name, phone, status } = req.body;
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (user.role === 'admin' && req.user._id.toString() !== user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'System administrator accounts cannot be modified by another admin',
+      });
+    }
+
+    if (name !== undefined) user.name = name.trim();
+    if (phone !== undefined) user.phone = phone || '';
+    if (status !== undefined) {
+      if (!['active', 'blocked'].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid status. Must be "active" or "blocked"',
+        });
+      }
+      if (user.role === 'admin') {
+        return res.status(400).json({
+          success: false,
+          message: 'System Administrator account status cannot be modified',
+        });
+      }
+      user.status = status;
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'User details updated successfully',
+      data: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+        status: updatedUser.status,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Block or Unblock a user (Admin only)
  * @route   PATCH /api/v1/users/:id/status
  * @access  Private/Admin

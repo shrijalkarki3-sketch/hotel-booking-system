@@ -192,17 +192,42 @@ export const getMe = async (req, res, next) => {
  */
 export const updateProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    const { name, phone, profileImage } = req.body;
 
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    user.name = req.body.name || user.name;
-    user.phone = req.body.phone !== undefined ? req.body.phone : user.phone;
-    user.profileImage = req.body.profileImage || user.profileImage;
+    const allowedUpdates = {};
 
-    const updatedUser = await user.save();
+    if (name !== undefined) {
+      if (typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid name',
+        });
+      }
+      allowedUpdates.name = name.trim();
+    }
+
+    if (phone !== undefined) {
+      allowedUpdates.phone = phone.trim();
+    }
+
+    if (profileImage !== undefined) {
+      allowedUpdates.profileImage = profileImage;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, allowedUpdates, {
+      new: true,
+      runValidators: true,
+      context: 'query',
+    }).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     res.status(200).json({
       success: true,
@@ -218,6 +243,13 @@ export const updateProfile = async (req, res, next) => {
       },
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide valid profile information',
+      });
+    }
+
     next(error);
   }
 };
