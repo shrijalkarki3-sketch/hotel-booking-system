@@ -23,18 +23,17 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-
 // Security and utility middleware
 app.use(helmet());
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-  process.env.CLIENT_URL,
-].filter(Boolean);
+const developmentOrigins = process.env.NODE_ENV === 'production'
+  ? []
+  : [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+  ];
+const allowedOrigins = [process.env.CLIENT_URL, ...developmentOrigins].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -42,7 +41,7 @@ app.use(cors({
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
@@ -104,8 +103,22 @@ app.use(errorHandler);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`[Server] Hotel Booking API running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-});
+const startServer = async () => {
+  try {
+    const connected = await connectDB();
+    if (!connected) {
+      throw new Error('MongoDB connection unavailable; server cannot start');
+    }
+
+    app.listen(PORT, () => {
+      console.log(`[Server] Hotel Booking API running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    });
+  } catch (error) {
+    console.error(`[Server] Startup aborted: ${error.message}`);
+    process.exitCode = 1;
+  }
+};
+
+startServer();
 
 export default app;

@@ -79,6 +79,27 @@ npm run dev      # Start Vite development server on port 5173
 
 ---
 
+## ☁️ Separate Frontend and Backend Deployment
+
+The frontend is a Vite single-page application and the backend is a standalone Express API. Deploy them as separate services so the React app owns the website root and the API remains a conventional Node.js server.
+
+### Frontend (Vercel)
+- Import this GitHub repository as a Vercel project and set **Root Directory** to `frontend`.
+- Use `npm run build` as the build command and `dist` as the output directory.
+- `frontend/vercel.json` rewrites direct page requests (such as `/login` and dashboard URLs) to the SPA entry point.
+- Before building or redeploying, configure `VITE_API_BASE_URL` in Vercel Project Settings → Environment Variables for each environment that needs API access (Production and Preview, if previews need the API). Set it to the backend's public API base URL, ending in `/api/v1`. This is a public URL, not a secret; Vite embeds it at build time.
+- Production builds fail with a clear error if `VITE_API_BASE_URL` is missing. Local development may leave it unset and use the Vite `/api` proxy to `http://localhost:5000`.
+
+### Backend (Node.js hosting service)
+- Deploy the `backend` directory as a Node.js service using `npm start`.
+- Configure `MONGO_URI`, `JWT_SECRET`, `NODE_ENV=production`, and `CLIENT_URL` in the hosting provider's environment settings. `CLIENT_URL` must be the exact frontend origin (scheme and hostname, without a path).
+- Keep database credentials and JWT secrets in the hosting provider's secret environment settings; do not put them in frontend variables or source files.
+- In MongoDB Atlas, use a database user with only the permissions the app needs and allow network access from the backend host. Avoid broad IP access rules when the provider offers stable egress addresses.
+
+The API is mounted at `/api/v1`. The backend's `/` route is an API status message, not the React homepage. Production CORS permits the configured `CLIENT_URL`; local development origins are enabled only outside production.
+
+---
+
 ## 🔑 Demo Account Credentials
 
 | Role | Email | Password | Scope & Permissions |
